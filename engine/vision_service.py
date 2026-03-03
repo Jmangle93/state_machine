@@ -16,9 +16,7 @@ class VisionService:
             screenshot_gray = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
 
         template = cv2.imread(template_path, 0)
-        result = cv2.matchTemplate(
-            screenshot_gray, template, cv2.TM_CCOEFF_NORMED
-        )
+        result = cv2.matchTemplate(screenshot_gray, template, cv2.TM_CCOEFF_NORMED)
 
         _, max_val, _, max_loc = cv2.minMaxLoc(result)
 
