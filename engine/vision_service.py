@@ -27,3 +27,34 @@ class VisionService:
             return (center_x, center_y)
 
         return None
+
+    def verify_template_at(self, template_path, position, region_size=60):
+        x, y = position
+
+        left = int(x - region_size)
+        top = int(y - region_size)
+        width = region_size * 2
+        height = region_size * 2
+
+        region = {
+            "left": left,
+            "top": top,
+            "width": width,
+            "height": height
+        }
+
+        with mss.mss() as sct:
+            screenshot = np.array(sct.grab(region))
+            screenshot_gray = cv2.cvtColor(screenshot, cv2.COLOR_BGR2GRAY)
+
+        template = cv2.imread(template_path, 0)
+
+        result = cv2.matchTemplate(
+            screenshot_gray,
+            template,
+            cv2.TM_CCOEFF_NORMED
+        )
+
+        _, max_val, _, max_loc = cv2.minMaxLoc(result)
+
+        return max_val >= self.threshold
