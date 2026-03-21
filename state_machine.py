@@ -7,6 +7,10 @@ class State(ABC):
     def __init__(self, name: str):
         self.name = name
 
+    def on_enter(self, context: Context) -> Optional[str]:
+        """Called once when transitioning into this state. Return a redirect state name to short-circuit, or None to proceed."""
+        return None
+
     @abstractmethod
     def execute(self, context: Context) -> Optional[str]:
         """
@@ -30,7 +34,12 @@ class StateMachine:
 
     def run(self):
         while self.context.running:
-            next_state = self.current_state.execute(self.context)
+            # Call on_enter for the new state
+            redirect = self.current_state.on_enter(self.context)
+            if redirect:
+                self.current_state = self.states[redirect]
+                continue
 
+            next_state = self.current_state.execute(self.context)
             if next_state:
                 self.current_state = self.states[next_state]
