@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
-from typing import Dict, Optional
 from context import Context
-
+import time
+from typing import Dict, Optional
 
 class State(ABC):
     def __init__(self, name: str):
@@ -34,6 +34,9 @@ class StateMachine:
 
     def run(self):
         while self.context.running:
+            if self.context.interrupted:
+                time.sleep(0.1)
+                continue
             # Call on_enter for the new state
             redirect = self.current_state.on_enter(self.context)
             if redirect:
