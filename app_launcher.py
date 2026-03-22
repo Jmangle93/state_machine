@@ -1,27 +1,47 @@
 # app_launcher.py
+
 import subprocess
 import time
+
 import pygetwindow as gw
 
-# Usage:
-# context.launcher.ensure_focused("My App", launch_cmd="myapp.exe")
 
 class AppLauncher:
-    def ensure_focused(self, window_title_substring: str, launch_cmd: str = None, timeout: float = 10.0) -> bool:
-        """Find and focus a window, optionally launching it first. Returns True if successful."""
-        windows = gw.getWindowsWithTitle(window_title_substring)
-        if not windows and launch_cmd:
+    def ensure_focused(
+        self,
+        window_title: str,
+        launch_cmd: str = None,
+        timeout: float = 10.0,
+    ) -> bool:
+        """
+        Find a window whose title contains `window_title` and bring it to focus.
+        If no matching window is found and `launch_cmd` is provided, launch the
+        app and wait up to `timeout` seconds for the window to appear.
+
+        Returns True if the window is focused, False if it could not be found.
+        """
+        window = self._find_window(window_title)
+
+        if window is None and launch_cmd:
             subprocess.Popen(launch_cmd, shell=True)
             deadline = time.time() + timeout
             while time.time() < deadline:
-                windows = gw.getWindowsWithTitle(window_title_substring)
-                if windows:
+                window = self._find_window(window_title)
+                if window:
                     break
                 time.sleep(0.5)
 
-        if windows:
-            w = windows[0]
-            w.restore()
-            w.activate()
-            return True
+        if window:
+            try:
+                window.restore()
+                window.activate()
+                time.sleep(0.3)   # Brief settle before vision checks
+                return True
+            except Exception:
+                return False
+
         return False
+
+    def _find_window(self, title_substring: str):
+        matches = gw.getWindowsWithTitle(title_substring)
+        return matches[0] if matches else None
