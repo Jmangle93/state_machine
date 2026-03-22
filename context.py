@@ -1,5 +1,6 @@
 # context.py
 
+from app_launcher import AppLauncher
 import threading
 import time
 import logging
@@ -115,12 +116,13 @@ def _serializable(value):
 
 class Context:
     def __init__(self, vision_service, input_service, log_dir: str = "logs",
-                 interrupt_threshold: int = 15, interrupt_resume_after: float = 2.0):
+                 interrupt_threshold: int = 15, interrupt_resume_after: float = 5.0):
         self.vision = vision_service
         self.input = input_service
         self.running = True
         self.interrupted = False
         self.logger = ContextLogger(log_dir=log_dir)
+        self.launcher = AppLauncher()
 
         # Internal data store — use get()/set() rather than .data[] directly
         self._data: dict = {}
